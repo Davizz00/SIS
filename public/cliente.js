@@ -1,42 +1,31 @@
 // Dibujar el canvas
-c.width = 750;
-c.height = 500; 
-function dibujarcanvas_texto(texto,w,h,){
+const CANVAS_WIDTH= 750;
+const CANVAS_HEIGHT= 500; 
+function dibujarcanvas_texto(texto,color){
 	var canvas = document.getElementById("myCanvas")
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "black";
-    ctx.fillRect(0,0, c.width, c.height);
+    ctx.fillRect(0,0, CANVAS_WIDTH, CANVAS_HEIGHT);
     ctx.font = "30px Arial";
 	ctx.textAlign = "center";
 	ctx.fillStyle = color;
-    ctx.fillText(texto,w,h);
+    ctx.fillText(texto, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
     
 }
 
-// este signo $ equivale a document.getElementById("ID")
-
-
-
-function button1(){
+// funcion al hacer click en el boton final de carrera
+function boton_final_de_carrera(){
 	$(function() {
-
-  		var socket = io();
-
+		var socket = io();
   		// (sensor) variable
- 		 socket.on('sensor', function(value){
+ 		socket.on('sensor', function(value){
 			if (value== 0){
-	 		   $('#c').text('sensor": ' + value + " led apagado");
-	  		   dibujarcanvas_texto("LED APAGADO", "red")
+	  			dibujarcanvas_texto("OFF", "red")
 			}
 			else{
-	 		   $('#c').text('sensor": ' + value + " led encendido");
-	 		   dibujarcanvas_texto("LED ENCENDIDO", "red");
+	 			dibujarcanvas_texto("ON", "green");
  			}
-    
-   		 console.log('sensor received');
   		});
-
 	});
 	dibujarcanvas_texto("");
-	
 }

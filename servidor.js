@@ -13,24 +13,23 @@ http.listen(port, function () {
 // Routing
 app.use(express.static(__dirname + '/public'));
 
-
 var led = new Gpio(14, 'out');
 var button = new Gpio(18, 'in', 'both');
 
-
-
 io.on('connection', function(socket){
+	button.watch(function(err, value) {
+   	if (value==1){
+       	value = 0;	
+  	} 
+    else{
+   		value = 1;
+   	}
+    led.writeSync(value);
+	// send (sensor) value to everyone
+    io.emit('sensor', value);
+    
 
-  
-      button.watch(function(err, value) {
-          led.writeSync(value);
-          // send (sensor) value to everyone
-          io.emit('sensor', value);
-          
-          
-
-      });
-      
+	});    
   })
 
   
