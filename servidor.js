@@ -23,6 +23,7 @@ app.use(express.static(__dirname + '/public'));
 var led = new Gpio(14, 'out'); 
 var final_de_carrera = new Gpio(18, 'in', 'both');
 var dht = new rpiDhtSensor.DHT11(2);
+var pir = new Gpio(21, "in", "both");
 var timer_activado = 0;
 var timer_dht = 0; 
 
@@ -39,10 +40,13 @@ io.on('connection', function(socket){
 		estado_servidor = estado; 
 
 		if (estado==SOCKET_SENSOR_FINAL_DE_CARRERA){	
-			clearInterval(timer_dht)	// finaliza el timer del sensor dht
+			clearInterval(timer_dht);	// finaliza el timer del sensor dht
 		}
 		else if (estado == SOCKET_SENSOR_DHT){	
-			timer_dht = setInterval(read_dht, 1000)    // inicia el timer del sensor dht
+			timer_dht = setInterval(read_dht, 1000);  // inicia el timer del sensor dht
+		}
+		else if (estado == SOCKET_SENSOR_PIR){
+			clearInterval(timer_dht);
 		}
 
 		final_de_carrera.watch(function(err, value){ // se ejecuta de forma asíncrona 
@@ -68,9 +72,16 @@ io.on('connection', function(socket){
 			if (estado_servidor == SOCKET_SENSOR_DHT){
 				var readout = dht.read();
 				console.log('Temperature: ' + readout.temperature.toFixed(2) + 'C, ' + 'humidity: ' + readout.humidity.toFixed(2) + '%'); 
-				io.emit("temperatureSensor", readout);
+				io.emit("sensor_dht", readout);	
 			}	 	 			
-		}		 	
+		}
+		console.log(estado_servidor)
+		pir.watch(function(err, value){
+			if(estado_servidor == SOCKET_SENSOR_PIR){
+				io.emit("sensor_pir", value)
+				console.log("valor ", value);
+			}
+		}); 	
 	});
 });
 
