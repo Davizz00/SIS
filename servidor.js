@@ -3,8 +3,15 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var Gpio = require('onoff').Gpio;
-
+var rpiDhtSensor = require('rpi-dht-sensor');
 var port = process.env.PORT || 8888;
+
+const SOCKET_SENSOR_APAGADO = 0;
+const SOCKET_SENSOR_FINAL_DE_CARRERA = 1;
+const SOCKET_SENSOR_DHT = 2;
+const SOCKET_SENSOR_PIR = 3;
+var estado_servidor = SOCKET_SENSOR_APAGADO; 
+
 
 http.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -12,24 +19,60 @@ http.listen(port, function () {
 
 // Routing
 app.use(express.static(__dirname + '/public'));
+//sensorres conenctados a los Gpios
+var led = new Gpio(14, 'out'); 
+var final_de_carrera = new Gpio(18, 'in', 'both');
+var dht = new rpiDhtSensor.DHT11(2);
+var timer_activado = 0;
+var timer_dht = 0; 
 
-var led = new Gpio(14, 'out');
-var button = new Gpio(18, 'in', 'both');
-
+// Timer para que el led se apague en un tiempo determinado
+function timer_led(){
+    timer_activado = 0;
+    led.write(0);
+    console.log("Led Apagado")	   			
+ }
+// tuneles por donde pasa la información del servidor al cliente y viceversa
 io.on('connection', function(socket){
-	button.watch(function(err, value) {
-   	if (value==1){
-       	value = 0;	
-  	} 
-    else{
-   		value = 1;
-   	}
-    led.writeSync(value);
-	// send (sensor) value to everyone
-    io.emit('sensor', value);
-    
 
-	});    
-  })
+	socket.on("init_sensor", function(estado){	//recibe el estado que le manda el cliente
+		estado_servidor = estado; 
+
+		if (estado==SOCKET_SENSOR_FINAL_DE_CARRERA){	
+			clearInterval(timer_dht)	// finaliza el timer del sensor dht
+		}
+		else if (estado == SOCKET_SENSOR_DHT){	
+			timer_dht = setInterval(read_dht, 1000)    // inicia el timer del sensor dht
+		}
+
+		final_de_carrera.watch(function(err, value){ // se ejecuta de forma asíncrona 
+			if (estado_servidor == SOCKET_SENSOR_FINAL_DE_CARRERA){
+				if (value==1){
+       				value = 0;
+       				io.emit('final_de_carrera', value);  				
+  				} 
+    			else{
+    			value = 1;
+    			io.emit('final_de_carrera', value);
+    				if (timer_activado == 0){
+    					timer_activado = 1;
+   						var time = setTimeout(timer_led, 1000);
+   						led.writeSync(1); 
+   						console.log("Led Encendido");						
+      				}
+   				} 	   		
+			}
+		});	
+
+		function read_dht() { // se ejecuta de forma síncrona con el timer
+			if (estado_servidor == SOCKET_SENSOR_DHT){
+				var readout = dht.read();
+				console.log('Temperature: ' + readout.temperature.toFixed(2) + 'C, ' + 'humidity: ' + readout.humidity.toFixed(2) + '%'); 
+				io.emit("temperatureSensor", readout);
+			}	 	 			
+		}		 	
+	});
+});
+
 
   
