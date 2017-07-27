@@ -15,16 +15,21 @@
   </p>
   <p id="c"></p>
   
-  <p><canvas id="myCanvas" width="750" height="500"></canvas></p>
+  <!--<p><canvas id="myCanvas" width="750px" height="500px"></canvas></p> -->
+  <div class="chart-container" style="position: relative; height:500px; width:750px">
+    <canvas id="myCanvas"></canvas>
+</div>
+
   <br>
   <p> Acerca del editor:</p>
   <p>Nombre: David Hernández Puerta</p>
   <p>Organización: IES Alkal'a Nahar</p>
   <p>E-mail: hernandez.davidtic@gmail.com</p>
-            
 
+  <script src="/socket.io/socket.io.js"></script>        
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js" />
   <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/cliente.js"></script>
+  <script src="/cliente.js"></script> 
 </body>
 </html>
+

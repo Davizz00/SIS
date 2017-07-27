@@ -4,6 +4,19 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var Gpio = require('onoff').Gpio;
 var rpiDhtSensor = require('rpi-dht-sensor');
+var node_webcam = require("node-webcam");
+var picture_config = {
+	widht: 750, 
+	height: 500, 
+	delay: 0,
+	saveShots: false,
+	quality: 10,
+	output: "jpeg",
+	device: false,
+	callbackReturn: "location",
+	verbose: true
+  };
+var webcam = node_webcam.create(picture_config);
 var port = process.env.PORT || 8888;
 
 const SOCKET_SENSOR_APAGADO = 0;
@@ -11,7 +24,6 @@ const SOCKET_SENSOR_FINAL_DE_CARRERA = 1;
 const SOCKET_SENSOR_DHT = 2;
 const SOCKET_SENSOR_PIR = 3;
 var estado_servidor = SOCKET_SENSOR_APAGADO; 
-
 
 http.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -24,20 +36,27 @@ var led = new Gpio(14, 'out');
 var final_de_carrera = new Gpio(18, 'in', 'both');
 var dht = new rpiDhtSensor.DHT11(2);
 var pir = new Gpio(21, "in", "both");
-var timer_activado = 0;
-var timer_dht = 0; 
+var timer_led_activado = 0;
+var timer_dht = 0;
+var timer_camera_activado = 0;
 
 // Timer para que el led se apague en un tiempo determinado
 function timer_led(){
-    timer_activado = 0;
+    timer_led_activado = 0;
     led.write(0);
     console.log("Led Apagado")	   			
+ }
+ function timer_camera(){
+ 	timer_camera_activado = 0;
+ 	webcam.clear();
+ 	console.log("timer desactivado")
  }
 // tuneles por donde pasa la información del servidor al cliente y viceversa
 io.on('connection', function(socket){
 
 	socket.on("init_sensor", function(estado){	//recibe el estado que le manda el cliente
 		estado_servidor = estado; 
+		console.log("estado servidor: ", estado_servidor);
 
 		if (estado==SOCKET_SENSOR_FINAL_DE_CARRERA){	
 			clearInterval(timer_dht);	// finaliza el timer del sensor dht
@@ -58,8 +77,8 @@ io.on('connection', function(socket){
     			else{
     			value = 1;
     			io.emit('final_de_carrera', value);
-    				if (timer_activado == 0){
-    					timer_activado = 1;
+    				if (timer_led_activado == 0){
+    					timer_led_activado = 1;
    						var time = setTimeout(timer_led, 1000);
    						led.writeSync(1); 
    						console.log("Led Encendido");						
@@ -75,15 +94,25 @@ io.on('connection', function(socket){
 				io.emit("sensor_dht", readout);	
 			}	 	 			
 		}
-		console.log(estado_servidor)
+
 		pir.watch(function(err, value){
 			if(estado_servidor == SOCKET_SENSOR_PIR){
 				io.emit("sensor_pir", value)
-				console.log("valor ", value);
+				if(value==1){
+					if(timer_camera_activado == 0){
+						timer_camera_activado = 1;
+						console.log("timer camera activado")
+						setTimeout(timer_camera, 5000);
+						webcam.capture("photo", function(error, data){
+						//io.emit("camera", data);
+						console.log("imagen creada:", error);
+					});	
+
+					}		
+				}
 			}
 		}); 	
 	});
 });
 
 
-  
