@@ -5,31 +5,37 @@
   <title>David Server </title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+  <div id="body">
+
   <h1> Raspberry Pi </h1>
-  <p> 
+  <p>
     <button onclick="boton_final_de_carrera()" , class="button button1"> Sensor</button>
     <button onclick="sensor_temperatura()", class="button button2">Temperatura</button>
     <button onclick="sensor_humedad()", class="button button3">Humedad</button>
     <button onclick="sensor_pir()", class="button button4">Camara</button>
   </p>
   <p id="c"></p>
-  
+
   <!--<p><canvas id="myCanvas" width="750px" height="500px"></canvas></p> -->
   <div class="chart-container" style="position: relative; height:500px; width:750px">
     <canvas id="myCanvas"></canvas>
-</div>
+  </div>
 
   <br>
-  <p> Acerca del editor:</p>
-  <p>Nombre: David Hernández Puerta</p>
-  <p>Organización: IES Alkal'a Nahar</p>
-  <p>E-mail: hernandez.davidtic@gmail.com</p>
 
-  <script src="/socket.io/socket.io.js"></script>        
+  </div>
+
+  <div id="footer">
+  <hr>
+  Copyright &copy; 2017 |  <a href="mailto:hernandez.davidtic@gmail.com">David Hernández Puerta</a> | IES Alkalá Nahar <br>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js" />
   <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="/cliente.js"></script> 
+  <script src="/cliente.js"></script>
+  </div>
 </body>
 </html>
-
