@@ -5,45 +5,68 @@ var SOCKET_SENSOR_FINAL_DE_CARRERA = 1;
 var SOCKET_SENSOR_DHT = 2;
 var SOCKET_SENSOR_PIR = 3;
 var socket = io();
-var estado_dht = 0; // 0: Estado para temperatura; 1: estado para humedad
 const ARRAY_LENGHT = 60;
 var chart = null;
+var estado = SOCKET_SENSOR_APAGADO;
+console.log(window.innerWidth);
 var chart_config = {
     type: 'line',
     data:{
-    	labels: [...Array(ARRAY_LENGHT).keys()],
+    	//labels: [...Array(ARRAY_LENGHT).keys()],
+    	labels: Array(ARRAY_LENGHT).fill('a'),
     	datasets:[{
-    		data: Array(ARRAY_LENGHT).fill(0)//my_array
+    		label: "Temperatura",
+			data: Array(ARRAY_LENGHT).fill(null),
+			backgroundColor: 'rgb(255,0,0)',
+			borderColor: 'rgb(255,0,0)',
+			borderWidht: 2,
+			fill : false
+    	},
+    	{
+    		label: "Humedad",
+    		data: Array(ARRAY_LENGHT).fill(null),
+    		backgroundColor: 'rgb(0,0,255)',
+    		borderColor: 'rgb(0,0,255)',
+    		borderWidht: 2,
+    		fill: false
+
     	}]
+    },
+    options: {
+    	// responsive: false,
+    	// maintainAspectRatio: true,
+    	title: {
+    		display: true,
+    		text: 'Informacion temperatura y humedad por segundo '
+    	},
+    	// tooltips: {
+    	// 	mode: 'index',
+    	// 	intersect: false
+    	// },
+    	// hover: {
+    	// 	mode: 'index',
+    	// 	intersect: true
+    	// },
+    	scales:{
+    		YAxes:[{
+    			display: true,
+    			ticks: {
+    				beginAtZero:true,
+    				max: 100
+    			}
+    		}]		
+    	}
     }
-    // ,
-    // options: {
-    // 	scales:{
-    // 		Yaxes:[{
-    // 			display: true,
-    // 			ticks: {
-    // 				beginAtZero:true,
-    // 				max: 50
-    // 			}
-    // 		}]		
-    // 	}
-    // }
 };
 
-function add_value_array(value){
+function add_value_array_temperature(value){
 	chart_config.data.datasets[0].data.shift();
-	//my_array.shift();
-	chart_config.data.datasets[0].data.push(value); 
+	chart_config.data.datasets[0].data.push(value);
+}
 
-	if (chart == null)
-		return;
-
-	chart.update();
-	//my_array.push(value);
-	for(var i = 0; i < ARRAY_LENGHT; i++){
-		console.log(i, ", ", chart_config.data.datasets[0].data[i]);
-
-	}
+function add_value_array_humidity(value){
+	chart_config.data.datasets[1].data.shift();
+	chart_config.data.datasets[1].data.push(value);
 }
 
 function dibujarcanvas_texto(texto,color){
@@ -56,6 +79,7 @@ function dibujarcanvas_texto(texto,color){
 	ctx.fillStyle = color;
     ctx.fillText(texto, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);     
 }
+
 function dibujarcanvas_imagen(img){
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext("2d");
@@ -63,6 +87,8 @@ function dibujarcanvas_imagen(img){
 }
 // Recibe la informacion del final de carrera
 socket.on('final_de_carrera', function(value){
+	estado = SOCKET_SENSOR_FINAL_DE_CARRERA; 
+	console.log(estado);
 	if (value== 0){
 	  	dibujarcanvas_texto("OFF", "red");
 	}
@@ -73,48 +99,43 @@ socket.on('final_de_carrera', function(value){
 
  //Recibe la informacion del sensor dht 
 socket.on("sensor_dht", function(readout){
-	if (estado_dht==0){
-		add_value_array(readout.temperature);
-	}
-		
-	else{
-		dibujarcanvas_texto(readout.humidity, "blue");// dibuja en el canvas la humedad	
+	estado = SOCKET_SENSOR_DHT;
+	if(SOCKET_SENSOR_DHT == estado){
+		add_value_array_temperature(readout.temperature);
+		add_value_array_humidity(readout.humidity);
+		if (chart == null)
+			return;
+		chart.update();
 	}
 });
 //Recibe informacion del sensor pir
 socket.on("sensor_pir", function(value){ 
+	estado = SOCKET_SENSOR_PIR;
 	if(value == 1){
 		dibujarcanvas_texto("Intruso", "red")
 	} 
 	else{
-		dibujarcanvas_texto("Sin rastro alguno", "green")
+		dibujarcanvas_texto("Sin rastro alguno", "green")	
 	}
 });
 socket.on("camera", function(data){
-	dibujarcanvas_imagen(data);
+	img = data.jpg
+	dibujarcanvas_imagen(img);
 });
+
 // funcion al hacer click en el boton sensor final de carrera
 function boton_final_de_carrera(){
-	dibujarcanvas_texto("");			 	
+	dibujarcanvas_texto("a", "black");			 	
 	socket.emit("init_sensor", SOCKET_SENSOR_FINAL_DE_CARRERA)	//Manda peticion al servidor
  }
 //funcion al hacer click en el boton temperatura
-function sensor_temperatura(){
-	estado_dht = 0;
-	//dibujarcanvas_texto(""); 
+function sensor_dht(){ 
+	socket.emit("init_sensor", SOCKET_SENSOR_DHT) // manda peticion al servidor
 	var ctx = document.getElementById('myCanvas').getContext('2d');
 	chart = new Chart(ctx, chart_config);
-	// manda peticion al servidor
-	socket.emit("init_sensor", SOCKET_SENSOR_DHT)
-}
-//Funcion al hacer click boton humedad
-function sensor_humedad(){
-	estado_dht = 1;
-	dibujarcanvas_texto("")
-	socket.emit("init_sensor", SOCKET_SENSOR_DHT)	// Manda peticion al servidor
 }
 //Funcion al hacer click boton camara
 function sensor_pir(){
-	dibujarcanvas_texto("");c
+	dibujarcanvas_texto("");
 	socket.emit("init_sensor", SOCKET_SENSOR_PIR) //Manda peticion al servidor
 }

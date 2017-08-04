@@ -12,7 +12,7 @@ var picture_config = {
 	saveShots: false,
 	quality: 10,
 	output: "jpeg",
-	device: false,
+	device: "/var/tmp",
 	callbackReturn: "location",
 	verbose: true
   };
@@ -48,7 +48,7 @@ function timer_led(){
  }
  function timer_camera(){
  	timer_camera_activado = 0;
- 	webcam.clear();
+ 	//webcam.clear();
  	console.log("timer desactivado")
  }
 // tuneles por donde pasa la información del servidor al cliente y viceversa
