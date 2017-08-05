@@ -12,8 +12,8 @@ console.log(window.innerWidth);
 var chart_config = {
     type: 'line',
     data:{
-    	//labels: [...Array(ARRAY_LENGHT).keys()],
-    	labels: Array(ARRAY_LENGHT).fill('a'),
+    	labels: [...Array(ARRAY_LENGHT).keys()],
+    	//labels: Array(ARRAY_LENGHT).fill(null),
     	datasets:[{
     		label: "Temperatura",
 			data: Array(ARRAY_LENGHT).fill(null),
@@ -39,14 +39,14 @@ var chart_config = {
     		display: true,
     		text: 'Informacion temperatura y humedad por segundo '
     	},
-    	// tooltips: {
-    	// 	mode: 'index',
-    	// 	intersect: false
-    	// },
-    	// hover: {
-    	// 	mode: 'index',
-    	// 	intersect: true
-    	// },
+    	//tooltips: {
+    	//	mode: 'index',
+    	 //	intersect: false
+    	//},
+    	//hover: {
+    	 //	mode: 'index',
+    	 	//intersect: true
+    	//},
     	scales:{
     		YAxes:[{
     			display: true,

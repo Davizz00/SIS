@@ -9,11 +9,11 @@ var picture_config = {
 	widht: 750, 
 	height: 500, 
 	delay: 0,
-	saveShots: false,
-	quality: 10,
+	saveShots: true,
+	quality: 100,
 	output: "jpeg",
-	device: "/var/tmp",
-	callbackReturn: "location",
+	device: false,
+	callbackReturn: "/var/tmp",
 	verbose: true
   };
 var webcam = node_webcam.create(picture_config);
