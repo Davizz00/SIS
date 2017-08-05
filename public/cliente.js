@@ -81,9 +81,9 @@ function dibujarcanvas_texto(texto,color){
 }
 
 function dibujarcanvas_imagen(img){
-	var canvas = document.getElementById("myCanvas");
+	var canvas = document.getElementById("imagen");
 	var ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0,0, CANVAS_WIDTH, CANVAS_HEIGHT);
+	ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 // Recibe la informacion del final de carrera
 socket.on('final_de_carrera', function(value){
@@ -116,11 +116,14 @@ socket.on("sensor_pir", function(value){
 	} 
 	else{
 		dibujarcanvas_texto("Sin rastro alguno", "green")	
-	}
+	}	
 });
-socket.on("camera", function(data){
-	img = data.jpg
-	dibujarcanvas_imagen(img);
+socket.on("image", function(data){
+	if(data.image){
+		var img = new Image();
+		img.src = 'data:image/jpeg;base64,' + data.buffer;
+		dibujarcanvas_imagen(img);
+	}	
 });
 
 // funcion al hacer click en el boton sensor final de carrera

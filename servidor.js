@@ -13,10 +13,9 @@ var picture_config = {
 	quality: 100,
 	output: "jpeg",
 	device: false,
-	callbackReturn: "/var/tmp",
+	callbackReturn: "location",
 	verbose: true
   };
-var webcam = node_webcam.create(picture_config);
 var port = process.env.PORT || 8888;
 
 const SOCKET_SENSOR_APAGADO = 0;
@@ -101,10 +100,10 @@ io.on('connection', function(socket){
 				if(value==1){
 					if(timer_camera_activado == 0){
 						timer_camera_activado = 1;
-						console.log("timer camera activado")
+						console.log("timer camera activado");
 						setTimeout(timer_camera, 5000);
-						webcam.capture("photo", function(error, data){
-						//io.emit("camera", data);
+						node_webcam.capture("/var/tmp/image", picture_config,function(error, buf){
+						io.emit("image", {image: true, buffer: buf.toString('base64') });
 						console.log("imagen creada:", error);
 					});	
 
