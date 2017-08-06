@@ -81,7 +81,7 @@ function dibujarcanvas_texto(texto,color){
 }
 
 function dibujarcanvas_imagen(img){
-	var canvas = document.getElementById("imagen");
+	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext("2d");
 	ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
@@ -109,17 +109,18 @@ socket.on("sensor_dht", function(readout){
 	}
 });
 //Recibe informacion del sensor pir
-socket.on("sensor_pir", function(value){ 
-	estado = SOCKET_SENSOR_PIR;
-	if(value == 1){
-		dibujarcanvas_texto("Intruso", "red")
-	} 
-	else{
-		dibujarcanvas_texto("Sin rastro alguno", "green")	
-	}	
-});
+//socket.on("sensor_pir", function(value){ 
+	//estado = SOCKET_SENSOR_PIR;
+	//if(value == 1){
+	//	dibujarcanvas_texto("Intruso", "red")
+	//} 
+	//else{
+	//	dibujarcanvas_texto("Sin rastro alguno", "green")	
+	//}	
+ //});
 socket.on("image", function(data){
 	if(data.image){
+		console.log(data);
 		var img = new Image();
 		img.src = 'data:image/jpeg;base64,' + data.buffer;
 		dibujarcanvas_imagen(img);

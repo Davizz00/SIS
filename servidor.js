@@ -13,7 +13,7 @@ var picture_config = {
 	quality: 100,
 	output: "jpeg",
 	device: false,
-	callbackReturn: "location",
+	callbackReturn: "buffer",
 	verbose: true
   };
 var port = process.env.PORT || 8888;
@@ -103,10 +103,10 @@ io.on('connection', function(socket){
 						console.log("timer camera activado");
 						setTimeout(timer_camera, 5000);
 						node_webcam.capture("/var/tmp/image", picture_config,function(error, buf){
-						io.emit("image", {image: true, buffer: buf.toString('base64') });
-						console.log("imagen creada:", error);
-					});	
-
+							console.log("buf: " + buf)
+							io.emit("image", {image: true, buffer: buf.toString('base64') });
+							console.log("imagen creada:", error);
+						});	
 					}		
 				}
 			}
