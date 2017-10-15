@@ -1,0 +1,29 @@
+h1 {
+    color: blue;
+}
+
+.button {
+    color: black ;
+    text-align: center;
+    padding : 2%;
+    border : 1px solid black;
+}
+
+.button1:hover{background-color: yellow;}
+.button2:hover{background-color: red;}
+.button3:hover{background-color: lightblue}
+.button4:hover{background-color: lightgreen}
+
+canvas {
+    border: 3px solid red;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    width: 800px;
+    height: 50px;
+    margin: 0 auto;
+}

@@ -4,18 +4,8 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var Gpio = require('onoff').Gpio;
 var rpiDhtSensor = require('rpi-dht-sensor');
-var node_webcam = require("node-webcam");
-var picture_config = {
-	widht: 750, 
-	height: 500, 
-	delay: 0,
-	saveShots: true,
-	quality: 100,
-	output: "jpeg",
-	device: false,
-	callbackReturn: "buffer",
-	verbose: true
-  };
+
+
 var port = process.env.PORT || 8888;
 
 const SOCKET_SENSOR_APAGADO = 0;
@@ -30,26 +20,17 @@ http.listen(port, function () {
 
 // Routing
 app.use(express.static(__dirname + '/public'));
-//sensorres conenctados a los Gpios
+
+//sensores conenctados a los Gpios de la Raspberry Pi 
 var led = new Gpio(14, 'out'); 
 var final_de_carrera = new Gpio(18, 'in', 'both');
 var dht = new rpiDhtSensor.DHT11(2);
 var pir = new Gpio(21, "in", "both");
+
 var timer_led_activado = 0;
 var timer_dht = 0;
-var timer_camera_activado = 0;
 
-// Timer para que el led se apague en un tiempo determinado
-function timer_led(){
-    timer_led_activado = 0;
-    led.write(0);
-    console.log("Led Apagado")	   			
- }
- function timer_camera(){
- 	timer_camera_activado = 0;
- 	//webcam.clear();
- 	console.log("timer desactivado")
- }
+ 
 // tuneles por donde pasa la información del servidor al cliente y viceversa
 io.on('connection', function(socket){
 
@@ -58,13 +39,17 @@ io.on('connection', function(socket){
 		console.log("estado servidor: ", estado_servidor);
 
 		if (estado==SOCKET_SENSOR_FINAL_DE_CARRERA){	
-			clearInterval(timer_dht);	// finaliza el timer del sensor dht
+			console.log("final de carrrera");
+			clearInterval(timer_dht);  // finaliza el timer del sensor dht	
 		}
 		else if (estado == SOCKET_SENSOR_DHT){	
+			console.log("dht");
 			timer_dht = setInterval(read_dht, 1000);  // inicia el timer del sensor dht
+			
 		}
 		else if (estado == SOCKET_SENSOR_PIR){
-			clearInterval(timer_dht);
+			clearInterval(timer_dht);  // Finaliza (borra) el timer del sensor dht 
+			
 		}
 
 		final_de_carrera.watch(function(err, value){ // se ejecuta de forma asíncrona 
@@ -86,29 +71,24 @@ io.on('connection', function(socket){
 			}
 		});	
 
+		// Timer para que el led se apague en un tiempo determinado
+		function timer_led(){
+    		timer_led_activado = 0;
+    		led.write(0);
+    		console.log("Led Apagado")	   			
+ 		}
+
 		function read_dht() { // se ejecuta de forma síncrona con el timer
-			if (estado_servidor == SOCKET_SENSOR_DHT){
-				var readout = dht.read();
-				console.log('Temperature: ' + readout.temperature.toFixed(2) + 'C, ' + 'humidity: ' + readout.humidity.toFixed(2) + '%'); 
-				io.emit("sensor_dht", readout);	
-			}	 	 			
+			var readout = dht.read();
+			console.log('Temperature: ' + readout.temperature.toFixed(2) + 'C, ' + 'humidity: ' + readout.humidity.toFixed(2) + '%'); 
+			io.emit("sensor_dht", readout);
+			timer_dht = 1s;
+					 	 			
 		}
 
 		pir.watch(function(err, value){
 			if(estado_servidor == SOCKET_SENSOR_PIR){
-				io.emit("sensor_pir", value)
-				if(value==1){
-					if(timer_camera_activado == 0){
-						timer_camera_activado = 1;
-						console.log("timer camera activado");
-						setTimeout(timer_camera, 5000);
-						node_webcam.capture("/var/tmp/image", picture_config,function(error, buf){
-							console.log("buf: " + buf)
-							io.emit("image", {image: true, buffer: buf.toString('base64') });
-							console.log("imagen creada:", error);
-						});	
-					}		
-				}
+				io.emit("sensor_pir", value)	
 			}
 		}); 	
 	});
