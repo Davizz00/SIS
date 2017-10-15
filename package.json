@@ -1,0 +1,16 @@
+{
+  "name": "SIS",
+  "version": "0.0.1",
+  "description": "Sensor Information Server",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^2.0.2",
+    "onoff": "^1.0.0",
+    "rpi-dht-sensor": "^0.1.1"
+    
+    
+  },
+  "scripts": {
+    "start": "node servidor.js"
+  }
+}
